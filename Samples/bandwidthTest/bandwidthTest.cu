@@ -475,6 +475,7 @@ void testBandwidthRange(unsigned int start, unsigned int end,
   }
 
   // clean up
+#define SHMOO_LIMIT_32MB (32 * 1e6)          // 32 MB
   free(memSizes);
   free(bandwidths);
 }

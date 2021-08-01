@@ -278,9 +278,9 @@ LIBRARIES :=
 
 # Gencode arguments
 ifeq ($(TARGET_ARCH),$(filter $(TARGET_ARCH),armv7l aarch64))
-SMS ?= 35 37 50 52 60 61 70 72 75 80 86
+SMS ?= 35 37 50 52 60 61 70 72 75 
 else
-SMS ?= 35 37 50 52 60 61 70 75 80 86
+SMS ?= 35 37 50 52 60 61 70 75 
 endif
 
 ifeq ($(SMS),)
@@ -299,7 +299,7 @@ GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
 endif
 endif
 
-ALL_CCFLAGS += --threads 0
+#ALL_CCFLAGS += --threads 0
 
 ifeq ($(SAMPLE_ENABLED),0)
 EXEC ?= @echo "[@]"
@@ -310,7 +310,7 @@ endif
 # Target rules
 all: build
 
-build: bandwidthTest
+build: bandwidthTest mybandwithtest
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
@@ -318,6 +318,13 @@ ifeq ($(SAMPLE_ENABLED),0)
 else
 	@echo "Sample is ready - all dependencies have been met"
 endif
+
+mybandwithtest.o: mybandwithtest.cu
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+mybandwithtest: mybandwithtest.o
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+	$(EXEC) mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
+	$(EXEC) cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 bandwidthTest.o:bandwidthTest.cu
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
@@ -331,7 +338,8 @@ run: build
 	$(EXEC) ./bandwidthTest
 
 clean:
-	rm -f bandwidthTest bandwidthTest.o
+	rm -f bandwidthTest bandwidthTest.o mybandwithtest mybandwithtest.o
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/bandwidthTest
+	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/mybandwithtest
 
 clobber: clean
